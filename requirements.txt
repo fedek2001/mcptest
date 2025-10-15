@@ -1,1 +1,5 @@
-flask==3.0.3
+fastapi==0.115.0
+mangum==0.17.0
+pydantic==2.9.2
+uvicorn==0.30.6
+model-context-protocol==0.1.0
