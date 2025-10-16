@@ -1,5 +1,6 @@
 {
-  "functions": { "api/**/*.py": { "runtime": "python3.11" } },
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
   "routes": [
     { "src": "/api/mcp/(.*)", "dest": "/api/mcp.py" }
   ]
