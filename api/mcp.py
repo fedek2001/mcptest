@@ -25,6 +25,10 @@ async def session():
 def sse(event: str, data: dict) -> bytes:
     return (f"event: {event}\n" + "data: " + json.dumps(data, ensure_ascii=False) + "\n\n").encode("utf-8")
 
+@app.get("/health")
+def health():
+    return {"ok": True}
+
 @app.post("/invoke")
 async def invoke(req: Request):
     payload = await req.json()
