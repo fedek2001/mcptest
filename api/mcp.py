@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 import json, asyncio
-from mcp.server.fastmcp import FastMCP  # si usás el SDK oficial; o cambia a la lib que uses
+from mcp.server.fastmcp import FastMCP  # o 'from fastmcp import FastMCP' si usás la librería 3rd-party
 
 app = FastAPI()
 mcp = FastMCP("vercel-mcp-python")
@@ -14,11 +14,7 @@ def reverse(text: str) -> str:
 async def session():
     tools = []
     for t in mcp.list_tools():
-        tools.append({
-            "name": t.name,
-            "description": t.description or "",
-            "args_schema": t.json_schema
-        })
+        tools.append({"name": t.name, "description": t.description or "", "args_schema": t.json_schema})
     return JSONResponse({
         "protocol": "mcp-http-sse",
         "server": {"name": "vercel-mcp-python", "version": "0.1.0"},
