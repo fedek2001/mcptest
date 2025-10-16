@@ -20,11 +20,11 @@ def sse(event: str, data: dict) -> bytes:
     return (f"event: {event}\n" + "data: " + json.dumps(data, ensure_ascii=False) + "\n\n").encode("utf-8")
 
 # --------- ENDPOINTS (con prefijo /api/mcp/ ) ---------
-@app.get("/api/mcp/health")
+@app.get("/api/mcp_server/health")
 def health():
     return jsonify({"ok": True})
 
-@app.post("/api/mcp/session")
+@app.post("/api/mcp_server/session")
 def session():
     tools = []
     for t in mcp.list_tools():
@@ -40,7 +40,7 @@ def session():
         "tools": tools
     })
 
-@app.post("/api/mcp/invoke")
+@app.post("/api/mcp_server/invoke")
 def invoke():
     payload = request.get_json(silent=True) or {}
     tool = payload.get("tool")
