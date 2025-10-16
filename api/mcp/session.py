@@ -1,12 +1,17 @@
 from flask import Flask, jsonify
-from ._shared import mcp
+import asyncio
+from ._shared import mcp  # donde registraste los tools
 
 app = Flask(__name__)
 
-@app.post("/api/mcp/session")
+def list_tools_sync():
+    # FastMCP.list_tools() es async → materializamos la lista
+    return asyncio.run(mcp.list_tools())
+
+@app.route("/api/mcp/session", methods=["POST"])
 def session():
     tools = []
-    for t in mcp.list_tools():
+    for t in list_tools_sync():
         tools.append({
             "name": t.name,
             "description": t.description or "",
