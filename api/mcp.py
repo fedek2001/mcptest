@@ -1,19 +1,30 @@
+# api/mcp.py
 from flask import Flask, request, Response, jsonify
 import json, time
-from mcp.server.fastmcp import FastMCP  # o: from fastmcp import FastMCP
+from mcp.server.fastmcp import FastMCP  # si usás la lib 3rd-party: from fastmcp import FastMCP
 
 app = Flask(__name__)
 mcp = FastMCP("vercel-mcp-python")
 
-@app.get("/health")
-def health():
-    return jsonify({"ok": True})
-
+# --------- TOOLS ---------
 @mcp.tool()
 def reverse(text: str) -> str:
     return text[::-1]
 
-@app.post("/session")
+@mcp.tool()
+def add(a: float, b: float) -> float:
+    return a + b
+
+# --------- SSE helper ---------
+def sse(event: str, data: dict) -> bytes:
+    return (f"event: {event}\n" + "data: " + json.dumps(data, ensure_ascii=False) + "\n\n").encode("utf-8")
+
+# --------- ENDPOINTS (con prefijo /api/mcp/ ) ---------
+@app.get("/api/mcp/health")
+def health():
+    return jsonify({"ok": True})
+
+@app.post("/api/mcp/session")
 def session():
     tools = []
     for t in mcp.list_tools():
@@ -29,10 +40,7 @@ def session():
         "tools": tools
     })
 
-def sse(event: str, data: dict) -> bytes:
-    return (f"event: {event}\n" + "data: " + json.dumps(data, ensure_ascii=False) + "\n\n").encode("utf-8")
-
-@app.post("/invoke")
+@app.post("/api/mcp/invoke")
 def invoke():
     payload = request.get_json(silent=True) or {}
     tool = payload.get("tool")
@@ -49,7 +57,8 @@ def invoke():
             time.sleep(0.05)
             yield sse("chunk", {"progress": p})
         try:
-            out = tool_impl.fn(**args) if not tool_impl.is_async else None  # Flask sync en Vercel
+            # Nota: en Flask serverless evitamos async. Si tu tool fuera async, conviértela o maneja un worker externo.
+            out = tool_impl.fn(**args) if not tool_impl.is_async else None
             yield sse("result", {"ok": True, "output": out})
         except Exception as e:
             yield sse("result", {"ok": False, "error": str(e)})
